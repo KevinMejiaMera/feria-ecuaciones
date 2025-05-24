@@ -1,0 +1,568 @@
+{% extends "base.html" %}
+
+{% block title %}Resolver Ecuaciones Lineales{% endblock %}
+
+{% block head %}
+{{ super() }}
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['\\[', '\\]']],
+    processEscapes: true,
+    packages: {'[+]': ['ams']}
+  },
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  }
+};
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Resolver Ecuaciones Diferenciales Lineales</h1>
+    
+    <div class="row">
+        <!-- Columna izquierda - Formulario -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-calculator"></i> Calculadora de Ecuaciones Lineales</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Formulario principal para la ecuación -->
+                    <form id="equationForm">
+                        <div class="form-group">
+                            <label for="equation" class="font-weight-bold">Ecuación diferencial:</label>
+                            <input type="text" class="form-control form-control-lg" id="equation" 
+                                   placeholder="Ej: y' + 2y = e^x, y'' - 3y' + 2y = 0" required>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle"></i> Usa ' para derivadas (y' = dy/dx, y'' = d²y/dx²)
+                            </small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-block mt-4">
+                            <i class="fas fa-play"></i> Resolver Ecuación
+                        </button>
+                    </form>
+                    
+                    <!-- Loading indicator -->
+                    <div id="loading" class="text-center mt-4" style="display:none;">
+                        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
+                        <p class="mt-2">Resolviendo ecuación diferencial...</p>
+                    </div>
+                    
+                    <!-- Mensaje de error -->
+                    <div id="error" class="alert alert-danger mt-3" style="display:none;"></div>
+                    
+                    <!-- Resultados generales -->
+                    <div id="generalResult" class="mt-4" style="display:none;">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h4><i class="fas fa-check-circle"></i> Solución General</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="solution-box mb-3">
+                                    <h5 class="text-primary">Solución:</h5>
+                                    <div id="generalSolution" class="solution-display"></div>
+                                </div>
+                                
+                                <div class="steps-box">
+                                    <h5 class="text-primary">Procedimiento de Solución:</h5>
+                                    <div id="generalSteps" class="steps-container"></div>
+                                </div>
+                                
+                                <button id="addConditionsBtn" class="btn btn-info mt-3" style="display:none;">
+                                    <i class="fas fa-sliders-h"></i> ¿Agregar condiciones iniciales?
+                                </button>
+                                
+                                <!-- Formulario para condiciones (oculto inicialmente) -->
+                                <form id="conditionsForm" style="display:none;" class="mt-3">
+                                    <div class="form-group">
+                                        <label for="conditions" class="font-weight-bold">Condiciones iniciales:</label>
+                                        <input type="text" class="form-control" id="conditions" 
+                                               placeholder="Ej: y(0)=1, y'(0)=2">
+                                        <small class="form-text text-muted">
+                                            Separa múltiples condiciones con comas.
+                                        </small>
+                                    </div>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-check"></i> Aplicar Condiciones
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Resultados con condiciones -->
+                    <div id="particularResult" class="mt-4" style="display:none;">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h4><i class="fas fa-star"></i> Solución con Condiciones Iniciales</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="solution-box mb-3">
+                                    <h5 class="text-primary">Solución Particular:</h5>
+                                    <div id="particularSolution" class="solution-display"></div>
+                                </div>
+                                
+                                <div class="steps-box mb-3">
+                                    <h5 class="text-primary">Pasos Adicionales:</h5>
+                                    <div id="additionalSteps" class="steps-container"></div>
+                                </div>
+                                
+                                <div id="graphContainer" class="mt-4" style="width:100%; min-height:400px; background-color:#f8f9fa; border-radius:8px; padding:15px;">
+                                    <!-- Contenido del gráfico se insertará aquí dinámicamente -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Columna derecha - Instrucciones -->
+        <div class="col-md-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-info text-white">
+                    <h3><i class="fas fa-question-circle"></i> Instrucciones</h3>
+                </div>
+                <div class="card-body">
+                    <h5 class="text-info"><i class="fas fa-lightbulb"></i> Formatos aceptados:</h5>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item">
+                            <strong>Primer orden:</strong> y' + p(x)y = q(x)<br>
+                            <small>Ej: y' + 2y = e<sup>x</sup></small>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Segundo orden:</strong> y'' + p(x)y' + q(x)y = r(x)<br>
+                            <small>Ej: y'' - 3y' + 2y = 0</small>
+                        </li>
+                    </ul>
+                    
+                    <h5 class="text-info mt-4"><i class="fas fa-code"></i> Sintaxis:</h5>
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li><code>^</code> para exponentes: <code>x^2</code></li>
+                                <li><code>*</code> para multiplicación: <code>2*x</code></li>
+                                <li>Funciones: <code>sin(x)</code>, <code>cos(x)</code>, <code>exp(x)</code></li>
+                                <li>Derivadas: <code>y'</code> (1ra), <code>y''</code> (2da)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <h5 class="text-info mt-4"><i class="fas fa-sliders-h"></i> Condiciones iniciales:</h5>
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <p class="mb-1">Ejemplos válidos:</p>
+                            <ul class="mb-0">
+                                <li><code>y(0)=1</code></li>
+                                <li><code>y'(1)=2</code></li>
+                                <li><code>y(0)=1, y'(0)=0</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .solution-display, .equation-display {
+        font-size: 1.2rem;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        overflow-x: auto;
+    }
+    
+    .solution-display {
+        border-left: 4px solid #28a745;
+    }
+    
+    .equation-display {
+        border-left: 4px solid #17a2b8;
+    }
+    
+    .steps-container {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+    }
+    
+    .solution-box, .steps-box {
+        margin-bottom: 20px;
+    }
+    
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .step-card {
+        margin-bottom: 15px;
+        border-left: 4px solid #6f42c1;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .step-header {
+        background-color: #f8f9fa;
+        padding: 10px 15px;
+        font-weight: bold;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .step-body {
+        padding: 15px;
+    }
+    
+    .step-equation, .step-solution, .step-details {
+        font-size: 1.1rem;
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #f5f5f5;
+        border-radius: 5px;
+        overflow-x: auto;
+    }
+    
+    .step-solution {
+        border-left: 3px solid #28a745;
+    }
+    
+    .step-equation {
+        border-left: 3px solid #17a2b8;
+    }
+    
+    .step-details {
+        border-left: 3px solid #6c757d;
+    }
+    
+    .MathJax {
+        font-size: 1.1em !important;
+    }
+    
+    mjx-container[jax="CHTML"] {
+        display: inline-block !important;
+    }
+    
+    #graphContainer img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .graph-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #6c757d;
+    }
+</style>
+
+<script>
+// Funciones auxiliares
+function toggleLoader(show) {
+    document.getElementById('loading').style.display = show ? 'block' : 'none';
+}
+
+function hideAllResults() {
+    document.getElementById('generalResult').style.display = 'none';
+    document.getElementById('particularResult').style.display = 'none';
+    document.getElementById('conditionsForm').style.display = 'none';
+    document.getElementById('addConditionsBtn').style.display = 'none';
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('error');
+    errorDiv.innerHTML = message;
+    errorDiv.style.display = 'block';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function hideError() {
+    document.getElementById('error').style.display = 'none';
+}
+
+function isMathContent(text) {
+    if (!text) return false;
+    const mathPatterns = [
+        /\\[a-zA-Z]+\{.*?\}/,
+        /[a-zA-Z]'/,
+        /[a-zA-Z]\^\{?\d+\}?/,
+        /[a-zA-Z]_\{?\d+\}?/,
+        /\\[()\[\]]/,
+        /\d+\s*[+\-*/]\s*\d+/,
+        /[a-zA-Z]\([^)]+\)/
+    ];
+    return mathPatterns.some(pattern => pattern.test(text));
+}
+
+function ensureMathDelimiters(content) {
+    if (!content) return '';
+    if (typeof content !== 'string') return content;
+    
+    if (content.startsWith('\\[') || content.startsWith('$$') || content.startsWith('\\(')) {
+        return content;
+    }
+    
+    if (isMathContent(content)) {
+        return `\\[ ${content} \\]`;
+    }
+    
+    return content;
+}
+
+function formatMathContent(text) {
+    if (!text) return '';
+    
+    const parts = text.split(/(\\[a-zA-Z]+\{.*?\}|[a-zA-Z]'|[a-zA-Z]\^\{?\d+\}?|[a-zA-Z]_\{?\d+\}?|\\[()\[\]]|\d+\s*[+\-*/]\s*\d+|[a-zA-Z]\([^)]+\))/g);
+    
+    return parts.map(part => {
+        if (isMathContent(part)) {
+            return ensureMathDelimiters(part);
+        }
+        return part;
+    }).join('');
+}
+
+function renderStep(step) {
+    let html = `
+        <div class="step-card">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Paso ${step.step}: ${step.description}</h5>
+                </div>
+                <div class="card-body">
+    `;
+    
+    if (step.details) {
+        html += `<div class="step-details mb-3">${formatMathContent(step.details)}</div>`;
+    }
+    
+    if (step.equation) {
+        html += `
+            <div class="mb-3">
+                <strong>Ecuación:</strong>
+                <div class="equation-display mt-2">${ensureMathDelimiters(step.equation)}</div>
+            </div>
+        `;
+    }
+    
+    if (step.method) {
+        html += `<div class="mb-3"><strong>Método:</strong> ${step.method}</div>`;
+    }
+    
+    if (step.solution) {
+        html += `
+            <div class="mt-3">
+                <strong>Solución:</strong>
+                <div class="solution-display mt-2">${ensureMathDelimiters(step.solution)}</div>
+            </div>
+        `;
+    }
+    
+    if (step.error) {
+        html += `
+            <div class="alert alert-danger mt-3">
+                <strong>Error:</strong> ${step.error}
+            </div>
+        `;
+    }
+    
+    html += `</div></div></div>`;
+    return html;
+}
+
+function processMathContent() {
+    if (typeof MathJax !== 'undefined') {
+        MathJax.typesetPromise()
+            .then(() => console.log("MathJax reprocesado correctamente"))
+            .catch(err => console.error("Error al reprocesar MathJax:", err));
+    }
+}
+
+// Manejar el formulario principal
+document.getElementById('equationForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const equation = document.getElementById('equation').value.trim();
+    
+    if (!equation) {
+        showError('Por favor ingresa una ecuación diferencial');
+        return;
+    }
+    
+    toggleLoader(true);
+    hideAllResults();
+    hideError();
+    
+    try {
+        const response = await fetch('/ecuaciones/lineales', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                equation: equation,
+                conditions: ''
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || data.error || 'Error al resolver la ecuación');
+        }
+        
+        if (!data.solution) {
+            throw new Error("No se pudo obtener la solución de la ecuación");
+        }
+        
+        document.getElementById('generalSolution').innerHTML = ensureMathDelimiters(data.solution);
+        
+        const stepsContainer = document.getElementById('generalSteps');
+        stepsContainer.innerHTML = '';
+        
+        if (data.steps && data.steps.length > 0) {
+            data.steps.forEach(step => {
+                stepsContainer.innerHTML += renderStep(step);
+            });
+        }
+        
+        document.getElementById('generalResult').style.display = 'block';
+        
+        if (data.needs_conditions) {
+            document.getElementById('addConditionsBtn').style.display = 'block';
+        }
+        
+        processMathContent();
+        
+    } catch (error) {
+        showError(error.message);
+        console.error("Error:", error);
+    } finally {
+        toggleLoader(false);
+    }
+});
+
+// Manejar el botón para agregar condiciones
+document.getElementById('addConditionsBtn').addEventListener('click', function() {
+    document.getElementById('conditionsForm').style.display = 'block';
+    this.style.display = 'none';
+});
+
+// Manejar el formulario de condiciones
+document.getElementById('conditionsForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const conditions = document.getElementById('conditions').value.trim();
+    const equation = document.getElementById('equation').value.trim();
+    
+    if (!conditions) {
+        showError('Por favor ingresa al menos una condición inicial');
+        return;
+    }
+    
+    toggleLoader(true);
+    hideError();
+    
+    try {
+        const response = await fetch('/ecuaciones/lineales', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                equation: equation,
+                conditions: conditions
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Error al aplicar condiciones iniciales');
+        }
+        
+        if (data.particular_solution) {
+            document.getElementById('particularSolution').innerHTML = ensureMathDelimiters(data.particular_solution);
+            
+            const additionalStepsContainer = document.getElementById('additionalSteps');
+            additionalStepsContainer.innerHTML = '';
+            
+            if (data.additional_steps && data.additional_steps.length > 0) {
+                data.additional_steps.forEach(step => {
+                    additionalStepsContainer.innerHTML += renderStep(step);
+                });
+            }
+            
+            // Manejo mejorado del gráfico
+            const graphContainer = document.getElementById('graphContainer');
+            graphContainer.innerHTML = ''; // Limpiar contenedor
+            
+            if (data.plot_html) {
+                graphContainer.innerHTML = data.plot_html;
+            } else if (data.plot_info) {
+                graphContainer.innerHTML = `
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle"></i> ${data.plot_info.message}</h5>
+                        <p class="mb-2">${data.plot_info.reason}</p>
+                        <div class="solution-display mt-2">
+                            ${ensureMathDelimiters(data.plot_info.solution)}
+                        </div>
+                    </div>
+                `;
+            } else {
+                graphContainer.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Gráfico no disponible para esta solución
+                    </div>
+                `;
+            }
+            
+            document.getElementById('particularResult').style.display = 'block';
+            window.scrollTo({
+                top: document.getElementById('particularResult').offsetTop,
+                behavior: 'smooth'
+            });
+        }
+        
+        processMathContent();
+        
+    } catch (error) {
+        showError(error.message);
+        console.error('Error:', error);
+    } finally {
+        toggleLoader(false);
+    }
+});
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', function() {
+    hideAllResults();
+    hideError();
+    
+    if (typeof MathJax !== 'undefined') {
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true,
+                ignoreClass: 'tex2jax_ignore',
+                processClass: 'tex2jax_process'
+            },
+            messageStyle: 'none'
+        });
+    }
+});
+</script>
+{% endblock %}

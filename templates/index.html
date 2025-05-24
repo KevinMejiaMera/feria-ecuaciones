@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprende Matemáticas Avanzadas</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4a6baf;
+            --secondary: #2c3e50;
+            --success: #28a745;
+            --info: #17a2b8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .header-text {
+            flex: 1;
+            max-width: 600px;
+        }
+        
+        .logo-left {
+            height: 100px; /* Tamaño para el logo de la izquierda */
+            width: auto;
+            object-fit: contain;
+        }
+        
+        .logo-right {
+            height: 100px; /* Tamaño diferente para el logo de la derecha */
+            width: auto;
+            object-fit: contain;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .levels {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        
+        .level-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .level-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            padding: 1.5rem;
+            color: white;
+            text-align: center;
+        }
+        
+        .beginner .card-header {
+            background: var(--success);
+        }
+        
+        .intermediate .card-header {
+            background: var(--info);
+        }
+        
+        .advanced .card-header {
+            background: var(--primary);
+        }
+        
+        .card-header i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .card-body ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .card-body li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .card-body li:last-child {
+            border-bottom: none;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn:hover {
+            background: #3a5a8f;
+            color: white;
+        }
+        
+        .beginner .btn {
+            background: var(--success);
+        }
+        
+        .intermediate .btn {
+            background: var(--info);
+        }
+        
+        .advanced .btn {
+            background: var(--primary);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            background: var(--dark);
+            color: white;
+            margin-top: 3rem;
+        }
+        
+        @media (max-width: 768px) {
+            .levels {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .logo-left {
+                height: 80px; /* Tamaño para móviles */
+                order: 1;
+            }
+            
+            .logo-right {
+                height: 60px; /* Tamaño para móviles */
+                order: 3;
+            }
+            
+            .header-text {
+                order: 2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <img src="{{ url_for('static', filename='images/Logo_P.png') }}" alt="Logo Carrera" class="logo-left">
+                <div class="header-text">
+                    <h1>Feria de Proyectos</h1>
+                    <p>Domina los conceptos fundamentales del cálculo y las ecuaciones diferenciales</p>
+                </div>
+                <img src="{{ url_for('static', filename='images/logo_compu.png') }}" alt="Logo Computación" class="logo-right">
+            </div>
+        </div>
+    </header>
+    
+    <!-- El resto de tu código permanece igual -->
+    <div class="container">
+        <div class="levels">
+            <!-- Nivel Principiante -->
+            <div class="level-card beginner">
+                <div class="card-header">
+                    <i class="fas fa-calculator"></i>
+                    <h2>Principiante</h2>
+                    <p>Introducción a las Derivadas</p>
+                </div>
+                <div class="card-body">
+                    <p>Conceptos básicos y aplicaciones de las derivadas:</p>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Reglas de derivación</li>
+                        <li><i class="fas fa-check"></i> Derivadas de funciones comunes</li>
+                    </ul>
+                    <a href="/derivadas" class="btn">Comenzar Aprendizaje</a>
+                </div>
+            </div>
+            
+            <!-- Nivel Intermedio -->
+            <div class="level-card intermediate">
+                <div class="card-header">
+                    <i class="fas fa-integral"></i>
+                    <h2>Intermedio</h2>
+                    <p>Introducción a las Integrales</p>
+                </div>
+                <div class="card-body">
+                    <p>Domina las técnicas de integración:</p>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Integrales indefinidas y definidas</li>
+                        <li><i class="fas fa-check"></i> Métodos de integración</li>
+                    </ul>
+                    <a href="/integrales" class="btn">Comenzar Aprendizaje</a>
+                </div>
+            </div>
+            
+            <!-- Nivel Avanzado -->
+            <div class="level-card advanced">
+                <div class="card-header">
+                    <i class="fas fa-infinity"></i>
+                    <h2>Avanzado</h2>
+                    <p>Ecuaciones Diferenciales</p>
+                </div>
+                <div class="card-body">
+                    <p>Resolución de ecuaciones diferenciales:</p>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Clasificación de ecuaciones</li>
+                        <li><i class="fas fa-check"></i> Métodos de solución</li>
+                        <li><i class="fas fa-check"></i> Soluciones numéricas</li>
+                    </ul>
+                    <a href="/ecuaciones" class="btn">Comenzar Aprendizaje</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+        </div>
+    </footer>
+
+    <script>
+        // Inicializar MathJax
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+        };
+    </script>
+</body>
+</html>

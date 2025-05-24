@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Ecuaciones Homogéneas{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Ecuaciones Diferenciales Homogéneas</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h3>Método de Solución</h3>
+        </div>
+        <div class="card-body">
+            <div class="math-equation">
+                <h4>Forma General</h4>
+                <p>\[\frac{dy}{dx} = f\left(\frac{y}{x}\right)\]</p>
+                <p>o alternativamente:</p>
+                <p>\[M(x,y)dx + N(x,y)dy = 0\]</p>
+                <p>donde M y N son funciones homogéneas del mismo grado</p>
+                
+                <h4 class="mt-4">Paso 1: Sustitución</h4>
+                <p>Realizar la sustitución \(v = \frac{y}{x}\) o \(y = vx\):</p>
+                <p>\[\frac{dy}{dx} = v + x\frac{dv}{dx}\]</p>
+                
+                <h4 class="mt-4">Paso 2: Ecuación separable</h4>
+                <p>Sustituir en la ecuación original para obtener:</p>
+                <p>\[v + x\frac{dv}{dx} = f(v)\]</p>
+                <p>que es separable:</p>
+                <p>\[\frac{dv}{f(v)-v} = \frac{dx}{x}\]</p>
+                
+                <h4 class="mt-4">Paso 3: Integrar</h4>
+                <p>Integrar ambos lados y luego sustituir de vuelta \(v = \frac{y}{x}\)</p>
+                
+                <h4 class="mt-4">Ejemplo Resuelto</h4>
+                <p>Resolver \(\frac{dy}{dx} = \frac{x^2 + y^2}{xy}\):</p>
+                <ol>
+                    <li>Sustituir \(y = vx\): \(\frac{dy}{dx} = v + x\frac{dv}{dx}\)</li>
+                    <li>Ecuación: \(v + x\frac{dv}{dx} = \frac{1 + v^2}{v}\)</li>
+                    <li>Simplificar: \(x\frac{dv}{dx} = \frac{1}{v}\)</li>
+                    <li>Separar: \(v dv = \frac{dx}{x}\)</li>
+                    <li>Integrar: \(\frac{v^2}{2} = \ln|x| + C\)</li>
+                    <li>Solución: \(y = x\sqrt{2\ln|x| + C}\)</li>
+                </ol>
+            </div>
+            <div class="d-flex justify-content-between mt-4">
+                <a href="/ecuaciones" class="btn btn-secondary">Volver al Menú</a>
+                <a href="/ecuaciones/homogeneas/resolver" class="btn btn-warning">Resolver Ecuaciones Homogéneas</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

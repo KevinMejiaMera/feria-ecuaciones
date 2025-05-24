@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}Clasificador de Ecuaciones Diferenciales{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Columna principal -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h2>Clasificador de Ecuaciones Diferenciales</h2>
+                </div>
+                <div class="card-body">
+                    <form id="classificationForm" method="POST">
+                        <div class="mb-3">
+                            <label for="equationInput" class="form-label">Ingresa tu ecuación diferencial:</label>
+                            <input type="text" class="form-control" id="equationInput" name="equation" 
+                                   placeholder="Ejemplo: dy/dx + 2y = e^x o y'' - 3y' + 2y = 0" required>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-classify">Clasificar Ecuación</button>
+                        </div>
+                    </form>
+
+                    <div id="resultContainer" class="result-container">
+                        <h4 class="mb-3">Resultado de Clasificación:</h4>
+                        <div id="equationDisplay" class="mb-4"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Tipo:</h5>
+                                <span id="typeBadge" class="badge bg-primary badge-custom">No determinado</span>
+                                
+                                <h5 class="mt-3">Orden:</h5>
+                                <span id="orderBadge" class="badge bg-info badge-custom">No determinado</span>
+                                
+                                <h5 class="mt-3">Linealidad:</h5>
+                                <span id="linearityBadge" class="badge bg-success badge-custom">No determinado</span>
+                                
+                              </div>
+                            <div class="col-md-6">
+                                <h5>Homogeneidad:</h5>
+                                <span id="homogeneityBadge" class="badge bg-warning text-dark badge-custom">No determinado</span>
+                                
+                                 </div>
+                        </div>
+                        
+                        <!-- Botón para resolver la ecuación (se mostrará después de clasificar) -->
+                        <div id="solveButtonContainer" class="text-center mt-4" style="display: none;">
+                            <button id="solveEquationBtn" class="btn btn-success">
+                                ¿Deseas resolver la ecuación?
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="errorContainer" class="alert alert-danger mt-3" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Columna de ejemplos -->
+        <div class="col-lg-4">
+            <div class="card example-card">
+                <div class="card-header bg-success text-white">
+                    <h5>Ejemplos por Clasificación</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Lineales:</h6>
+                    <div class="example-item p-2 mb-2 border-bottom" onclick="fillExample('dy/dx + 2y = 0')">
+                        <span class="text-primary">Homogénea:</span> \( \frac{dy}{dx} + 2y = 0 \)
+                    </div>
+                    <div class="example-item p-2 mb-2 border-bottom" onclick="fillExample('dy/dx + y = e^x')">
+                        <span class="text-primary">No homogénea:</span> \( \frac{dy}{dx} + y = e^x \)
+                    </div>
+                    
+                      <h6 class="mt-3">Segundo Orden:</h6>
+                    <div class="example-item p-2 mb-2 border-bottom" onclick="fillExample('y\'\' = y + x')">
+                        \( y'' = y + x \)
+                    </div>
+                    <div class="example-item p-2 mb-2 border-bottom" onclick="fillExample('y\'\' - 3y\' + 2y = 0')">
+                        \( y'' - 3y' + 2y = 0 \)
+                    </div>
+                    <h6 class="mt-3">No lineales:</h6>
+                    <div class="example-item p-2 mb-2 border-bottom" onclick="fillExample('dy/dx = y^2 + x')">
+                        \( \frac{dy}{dx} = y^2 + x \)
+                    </div>
+                        
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        border: none;
+    }
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+    }
+    .btn-classify {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        border: none;
+        border-radius: 30px;
+        padding: 10px 25px;
+        font-weight: 600;
+    }
+    .result-container {
+        background-color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+        display: none;
+    }
+    .example-card {
+        height: 100%;
+    }
+    .example-item {
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .example-item:hover {
+        background-color: #f0f0f0;
+    }
+    .badge-custom {
+        font-size: 0.9rem;
+        padding: 0.5em 0.75em;
+        margin-bottom: 0.5rem;
+        display: inline-block;
+    }
+    #equationDisplay {
+        font-size: 1.2rem;
+        text-align: center;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    body {
+        background-color: #f8f9fa;
+        padding-top: 20px;
+    }
+    /* Nuevos colores para badges */
+    .bg-purple { background-color: #6f42c1; }
+    .bg-indigo { background-color: #6610f2; }
+    .bg-teal { background-color: #20c997; }
+    .method-badge {
+        white-space: normal;
+        text-align: left;
+        word-wrap: break-word;
+    }
+    #solveEquationBtn {
+        background: linear-gradient(135deg, #20c997 0%, #3bd9d9 100%);
+        border: none;
+        border-radius: 30px;
+        padding: 10px 25px;
+        font-weight: 600;
+    }
+</style>
+
+<script>
+    // Variable para almacenar la clasificación actual
+    let currentClassification = {};
+    
+    // Función para llenar ejemplos
+    function fillExample(example) {
+        document.getElementById('equationInput').value = example;
+    }
+
+    // Manejar el envío del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('classificationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const equation = document.getElementById('equationInput').value.trim();
+            
+            if (!equation) {
+                showError('Por favor ingresa una ecuación');
+                return;
+            }
+
+            classifyEquation(equation);
+        });
+        
+        // Manejar clic en el botón de resolver ecuación
+        document.getElementById('solveEquationBtn').addEventListener('click', function() {
+            if (currentClassification.homogeneidad === 'Homogénea') {
+                window.location.href = '/ecuaciones/homogeneas';
+            } else {
+                window.location.href = '/ecuaciones/no-homogeneas';
+            }
+        });
+    });
+
+    // Función para clasificar la ecuación
+    function classifyEquation(equation) {
+        const btn = document.querySelector('.btn-classify');
+        const originalBtnText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+        btn.disabled = true;
+
+        // Ocultar errores anteriores
+        document.getElementById('errorContainer').style.display = 'none';
+
+        // Crear FormData en lugar de JSON
+        const formData = new FormData();
+        formData.append('equation', equation);
+
+        fetch('/clasificar-ecuacion', {
+            method: 'POST',
+            body: formData  // Envía como FormData en lugar de JSON
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.message || `Error HTTP ${response.status}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'error') {
+                throw new Error(data.message);
+            }
+            // Guardar la clasificación actual
+            currentClassification = data.classification;
+            displayResults(equation, data.classification);
+        })
+        .catch(error => {
+            console.error("Error en la clasificación:", error);
+            showError(error.message);
+        })
+        .finally(() => {
+            btn.innerHTML = originalBtnText;
+            btn.disabled = false;
+        });
+    }
+
+    // Función para mostrar errores mejorada
+    function showError(message) {
+        const errorContainer = document.getElementById('errorContainer');
+        errorContainer.innerHTML = `
+            <strong>Error:</strong> ${message}
+            <button type="button" class="btn-close float-end" onclick="this.parentElement.style.display='none'"></button>
+        `;
+        errorContainer.style.display = 'block';
+    }
+
+    // Función para mostrar resultados
+    function displayResults(equation, data) {
+        try {
+            // Mostrar la ecuación formateada
+            const equationDisplay = document.getElementById('equationDisplay');
+            equationDisplay.textContent = equation; // Mostrar texto plano primero
+            
+            // Actualizar los badges con los resultados
+            const updateBadge = (id, value) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value || 'No determinado';
+                }
+            };
+
+            updateBadge('typeBadge', data.tipo);
+            updateBadge('orderBadge', data.orden);
+            updateBadge('linearityBadge', data.linealidad);
+            updateBadge('homogeneityBadge', data.homogeneidad);
+            
+            // Mostrar el contenedor de resultados
+            document.getElementById('resultContainer').style.display = 'block';
+            
+            // Mostrar el botón de resolver ecuación
+            document.getElementById('solveButtonContainer').style.display = 'block';
+            
+            // Intentar renderizar con MathJax si está disponible
+            if (window.MathJax) {
+                equationDisplay.innerHTML = `\\[ ${equation} \\]`;
+                MathJax.typesetPromise();
+            }
+        } catch (error) {
+            showError('Error al mostrar los resultados: ' + error.message);
+            console.error("Error en displayResults:", error);
+        }
+    }
+</script>
+{% endblock %}

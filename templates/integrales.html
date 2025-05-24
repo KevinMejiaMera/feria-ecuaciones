@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Integrales{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Calculadora de Integrales</h1>
+    
+    <div class="row">
+        <!-- Panel de Calculadora -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3>Calculadora</h3>
+                </div>
+                <div class="card-body">
+                    <form id="integralForm">
+                        <div class="form-group mb-3">
+                            <label for="functionInput">Ingrese la función f(x):</label>
+                            <input type="text" class="form-control" id="functionInput" placeholder="Ej: x^2 + cos(x)" required>
+                            <small class="form-text text-muted">Usa ^ para exponentes. Ejemplos: 3x^2, sin(x), exp(x), log(x)</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Calcular Integral</button>
+                        <button type="button" id="clearBtn" class="btn btn-secondary ml-2">Limpiar</button>
+                    </form>
+                    
+                    <div id="resultContainer" class="mt-4" style="display: none;">
+                        <h4>Resultado:</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="integralResult" class="math-equation"></div>
+                            </div>
+                        </div>
+                        <div id="stepsContainer" class="mt-3 card">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">Pasos de la solución</h5>
+                            </div>
+                            <div class="card-body">
+                                <ol id="stepsList" class="mb-0"></ol>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="errorContainer" class="alert alert-danger mt-3" style="display: none;"></div>
+                    <div id="loadingSpinner" class="text-center mt-3" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Calculando...</span>
+                        </div>
+                        <p>Calculando integral...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel de Reglas de Integración -->
+        <div class="col-md-6">
+            <div class="card mb-4" style="max-height: 400px;">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Reglas Básicas de Integración</h3>
+                </div>
+                
+                    <div class="math-equation">
+                        <p><strong>Potencia:</strong> \[\int x^n \, dx = \frac{x^{n+1}}{n+1} + C \quad (n \neq -1)\]</p>
+                        <p><strong>Exponencial:</strong> \[\int e^x \, dx = e^x + C\]</p>
+                        <p><strong>Seno:</strong> \[\int \sin(x) \, dx = -\cos(x) + C\]</p>
+                        <p><strong>Coseno:</strong> \[\int \cos(x) \, dx = \sin(x) + C\]</p>
+                        <p><strong>Constante:</strong> \[\int k \, dx = kx + C\]</p>
+                        <p><strong>Logarítmica:</strong> \[\int \frac{1}{x} \, dx = \ln|x| + C\]</p>
+                        <p><strong>Sustitución:</strong> \[\int f(g(x))g'(x) \, dx = F(g(x)) + C\]</p>
+                        <p><strong>Por Partes:</strong> \[\int u \, dv = uv - \int v \, du\]</p>
+                    </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para el scroll personalizado */
+    .card-body::-webkit-scrollbar {
+        width: 8px;
+    }
+    .card-body::-webkit-scrollbar-track {
+        background: #f8f9fa;
+    }
+    .card-body::-webkit-scrollbar-thumb {
+        background-color: #6c757d;
+        border-radius: 4px;
+        border: 2px solid #f8f9fa;
+    }
+    .math-equation p {
+        margin-bottom: 0.8rem;
+    }
+    .math-equation {
+        font-size: 1.05em;
+        text-align: justify;
+        padding-left: 10px;
+    }
+    /* Estructura para footer fijo */
+    body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .container {
+        flex: 1;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos del DOM
+    const form = document.getElementById('integralForm');
+    const clearBtn = document.getElementById('clearBtn');
+    const functionInput = document.getElementById('functionInput');
+    const resultContainer = document.getElementById('resultContainer');
+    const errorContainer = document.getElementById('errorContainer');
+    const integralResult = document.getElementById('integralResult');
+    const stepsContainer = document.getElementById('stepsList');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    
+    // Limpiar formulario
+    clearBtn.addEventListener('click', function() {
+        form.reset();
+        resultContainer.style.display = 'none';
+        errorContainer.style.display = 'none';
+    });
+    
+    // Enviar formulario
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const funcion = functionInput.value.trim();
+        
+        // Validación básica
+        if (!funcion) {
+            errorContainer.textContent = 'Por favor ingrese una función';
+            errorContainer.style.display = 'block';
+            return;
+        }
+        
+        // Ocultar resultados anteriores y errores
+        resultContainer.style.display = 'none';
+        errorContainer.style.display = 'none';
+        loadingSpinner.style.display = 'block';
+        
+        try {
+            // Llamada al backend
+            const response = await fetch('/calcular-integral', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    funcion: funcion
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Mostrar el resultado de la integral
+                integralResult.innerHTML = `\\[ \\int (${funcion}) \\, dx = ${data.integral} \\]`;
+                
+                // Mostrar pasos si existen
+                if (data.pasos && data.pasos.length > 0) {
+                    stepsContainer.innerHTML = '';
+                    data.pasos.forEach(paso => {
+                        const li = document.createElement('li');
+                        li.innerHTML = paso.replace(/\$(.*?)\$/g, '\\[$1\\]');
+                        stepsContainer.appendChild(li);
+                    });
+                } else {
+                    stepsContainer.innerHTML = '<li>No se generaron pasos detallados para esta integral</li>';
+                }
+                
+                resultContainer.style.display = 'block';
+            } else {
+                // Mostrar error
+                errorContainer.textContent = data.error || 'Error al calcular la integral';
+                errorContainer.style.display = 'block';
+            }
+        } catch (error) {
+            errorContainer.textContent = 'Error de conexión con el servidor';
+            errorContainer.style.display = 'block';
+        } finally {
+            loadingSpinner.style.display = 'none';
+        }
+        
+        // Renderizar MathJax después de actualizar el contenido
+        if (typeof MathJax !== 'undefined') {
+            MathJax.typesetPromise();
+        }
+    });
+});
+</script>
+{% endblock %}

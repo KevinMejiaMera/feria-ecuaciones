@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Ecuaciones Diferenciales{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Nueva sección de clasificación -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3>Clasificación de Ecuaciones Diferenciales</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Por tipo:</h4>
+                            <ul class="list-group mb-3">
+                                <li class="list-group-item">Ordinarias (EDO)</li>
+                            </ul>
+                            
+                            <h4>Por orden:</h4>
+                            <ul class="list-group mb-3">
+                                <li class="list-group-item">Primer orden</li>
+                                <li class="list-group-item">Segundo orden</li>
+                                <li class="list-group-item">Orden superior</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h4>Por linealidad:</h4>
+                            <ul class="list-group mb-3">
+                                <li class="list-group-item">Lineales</li>
+                                <li class="list-group-item">No lineales</li>
+                            </ul>
+                            
+                            <h4>Otras clasificaciones:</h4>
+                            <ul class="list-group">
+                                <li class="list-group-item">Homogéneas</li>
+                                <li class="list-group-item">No homogéneas</li>
+                                
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                    <a href="{{ url_for('clasificar_ecuacion') }}" class="btn btn-dark">Clasifica una Ecuación</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contenedores originales -->
+    <div class="row">
+          <!-- Homogéneas -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h3>Homogéneas</h3>
+                </div>
+                <div class="card-body">
+                    <div class="math-equation">
+                        <p>Forma general:</p>
+                        <p>\[\frac{dy}{dx} = f\left(\frac{y}{x}\right)\]</p>
+                        <p>Solución por sustitución:</p>
+                        <p>\[v = \frac{y}{x}, \quad y = vx, \quad \frac{dy}{dx} = v + x\frac{dv}{dx}\]</p>
+                    </div>
+                    <a href="/ecuaciones/homogeneas" class="btn btn-warning mt-3">Ver Metodo</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- No homogéneas -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-secondary text-white">
+                    <h3>No Homogéneas</h3>
+                </div>
+                <div class="card-body">
+                    <div class="math-equation">
+                        <p>Forma general (lineales):</p>
+                        <p>\[\frac{dy}{dx} + P(x)y = Q(x)\]</p>
+                        <p>Solución general:</p>
+                        <p>\[y = y_h + y_p\]</p>
+                        <p>Donde \(y_h\) es solución homogénea y \(y_p\) es solución particular</p>
+                    </div>
+                    <a href="/ecuaciones/no-homogeneas" class="btn btn-secondary mt-3">Ver Metodo</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .math-equation {
+        font-size: 1.05em;
+        margin-bottom: 1rem;
+    }
+    .math-equation p {
+        margin-bottom: 0.5rem;
+    }
+    .card {
+        transition: transform 0.3s;
+        border: none;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+    .btn {
+        font-weight: 500;
+        padding: 8px 20px;
+        border-radius: 20px;
+    }
+    .card-header {
+        border-bottom: none;
+        padding: 1.25rem 1.5rem;
+    }
+    .card-body {
+        padding: 1.5rem;
+    }
+    .list-group-item {
+        font-size: 1.05em;
+        padding: 0.75rem 1.25rem;
+    }
+</style>
+{% endblock %}

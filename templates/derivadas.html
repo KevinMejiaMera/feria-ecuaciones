@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Derivadas{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Calculadora de Derivadas</h1>
+    
+    <div class="row">
+        <!-- Panel de Calculadora -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3>Calculadora</h3>
+                </div>
+                <div class="card-body">
+                    <form id="derivativeForm">
+                        <div class="form-group mb-3">
+                            <label for="functionInput">Ingrese la función f(x):</label>
+                            <input type="text" class="form-control" id="functionInput" placeholder="Ej: x^2 + sin(x)" required>
+                            <small class="form-text text-muted">Usa ^ para exponentes. Ejemplos: 3x^2, sin(x), exp(x), log(x)</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Calcular Derivada</button>
+                        <button type="button" id="clearBtn" class="btn btn-secondary ml-2">Limpiar</button>
+                    </form>
+                    
+                    <div id="resultContainer" class="mt-4" style="display: none;">
+                        <h4>Resultado:</h4>
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="derivativeResult" class="math-equation"></div>
+                            </div>
+                        </div>
+                        <div id="stepsContainer" class="mt-3 card">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">Pasos de la solución</h5>
+                            </div>
+                            <div class="card-body">
+                                <ol id="stepsList" class="mb-0"></ol>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="errorContainer" class="alert alert-danger mt-3" style="display: none;"></div>
+                    <div id="loadingSpinner" class="text-center mt-3" style="display: none;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Calculando...</span>
+                        </div>
+                        <p>Calculando derivada...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel de Reglas de Derivación -->
+        <div class="col-md-6">
+            <div class="card mb-4" style="max-height: 400px;"> <!-- Altura máxima fija -->
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Reglas Básicas de Derivación</h3>
+                </div>
+               
+                    <div class="math-equation">
+                        <p><strong>Constante:</strong> \[\frac{d}{dx}[c] = 0\]</p>
+                        <p><strong>Potencia:</strong> \[\frac{d}{dx}[x^n] = nx^{n-1}\]</p>
+                        <p><strong>Exponencial:</strong> \[\frac{d}{dx}[e^x] = e^x\]</p>
+                        <p><strong>Seno:</strong> \[\frac{d}{dx}[\sin(x)] = \cos(x)\]</p>
+                        <p><strong>Coseno:</strong> \[\frac{d}{dx}[\cos(x)] = -\sin(x)\]</p>
+                        <p><strong>Producto:</strong> \[\frac{d}{dx}[f(x)g(x)] = f'(x)g(x) + f(x)g'(x)\]</p>
+                        <p><strong>Cociente:</strong> \[\frac{d}{dx}\left[\frac{f(x)}{g(x)}\right] = \frac{f'(x)g(x) - f(x)g'(x)}{g(x)^2}\]</p>
+                        <p><strong>Cadena:</strong> \[\frac{d}{dx}f(g(x)) = f'(g(x)) \cdot g'(x)\]</p>
+                    </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para el scroll personalizado */
+    .card-body::-webkit-scrollbar {
+        width: 8px;
+    }
+    .card-body::-webkit-scrollbar-track {
+        background: #f8f9fa;
+    }
+    .card-body::-webkit-scrollbar-thumb {
+        background-color: #6c757d;
+        border-radius: 4px;
+    }
+    .math-equation p {
+        margin-bottom: 0.8rem;
+    }
+    .math-equation {
+        font-size: 1.05em;
+        text-align: justify;
+    padding-left: 10px;
+    }
+    /* Evitar que el footer se mueva */
+    body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .container {
+        flex: 1;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos del DOM
+    const form = document.getElementById('derivativeForm');
+    const clearBtn = document.getElementById('clearBtn');
+    const functionInput = document.getElementById('functionInput');
+    const resultContainer = document.getElementById('resultContainer');
+    const errorContainer = document.getElementById('errorContainer');
+    const derivativeResult = document.getElementById('derivativeResult');
+    const stepsContainer = document.getElementById('stepsList');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    
+    // Limpiar formulario
+    clearBtn.addEventListener('click', function() {
+        form.reset();
+        resultContainer.style.display = 'none';
+        errorContainer.style.display = 'none';
+    });
+    
+    // Enviar formulario
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const funcion = functionInput.value.trim();
+        
+        // Validación básica
+        if (!funcion) {
+            errorContainer.textContent = 'Por favor ingrese una función';
+            errorContainer.style.display = 'block';
+            return;
+        }
+        
+        // Ocultar resultados anteriores y errores
+        resultContainer.style.display = 'none';
+        errorContainer.style.display = 'none';
+        loadingSpinner.style.display = 'block';
+        
+        try {
+            // Llamada al backend
+            const response = await fetch('/calcular-derivada', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    funcion: funcion
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Mostrar SOLO el resultado de la derivada
+                derivativeResult.innerHTML = `\\[ f'(x) = ${data.derivada} \\]`;
+                
+                // Mostrar pasos si existen
+                if (data.pasos && data.pasos.length > 0) {
+                    stepsContainer.innerHTML = '';
+                    data.pasos.forEach(paso => {
+                        const li = document.createElement('li');
+                        li.innerHTML = paso.replace(/\$(.*?)\$/g, '\\[$1\\]');
+                        stepsContainer.appendChild(li);
+                    });
+                } else {
+                    stepsContainer.innerHTML = '<li>No se generaron pasos detallados para esta derivada</li>';
+                }
+                
+                resultContainer.style.display = 'block';
+            } else {
+                // Mostrar error
+                errorContainer.textContent = data.error || 'Error al calcular la derivada';
+                errorContainer.style.display = 'block';
+            }
+        } catch (error) {
+            errorContainer.textContent = 'Error de conexión con el servidor';
+            errorContainer.style.display = 'block';
+        } finally {
+            loadingSpinner.style.display = 'none';
+        }
+        
+        // Renderizar MathJax después de actualizar el contenido
+        if (typeof MathJax !== 'undefined') {
+            MathJax.typesetPromise();
+        }
+    });
+});
+</script>
+{% endblock %}

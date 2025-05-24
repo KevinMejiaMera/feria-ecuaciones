@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Ecuaciones Lineales{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Ecuaciones Diferenciales Lineales</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3>Método de Solución</h3>
+        </div>
+        <div class="card-body">
+            <div class="math-equation">
+                <h4>Forma General</h4>
+                <p>\[\frac{dy}{dx} + P(x)y = Q(x)\]</p>
+                
+                <h4 class="mt-4">Paso 1: Factor Integrante</h4>
+                <p>Calcular el factor integrante \(\mu(x)\):</p>
+                <p>\[\mu(x) = e^{\int P(x)dx}\]</p>
+                
+                <h4 class="mt-4">Paso 2: Multiplicar la ecuación</h4>
+                <p>Multiplicar ambos lados por \(\mu(x)\):</p>
+                <p>\[\mu(x)\frac{dy}{dx} + \mu(x)P(x)y = \mu(x)Q(x)\]</p>
+                
+                <h4 class="mt-4">Paso 3: Lado izquierdo como derivada</h4>
+                <p>El lado izquierdo es la derivada de \(\mu(x)y\):</p>
+                <p>\[\frac{d}{dx}[\mu(x)y] = \mu(x)Q(x)\]</p>
+                
+                <h4 class="mt-4">Paso 4: Integrar ambos lados</h4>
+                <p>Integrar para encontrar la solución:</p>
+                <p>\[\mu(x)y = \int \mu(x)Q(x)dx + C\]</p>
+                <p>\[y = \frac{1}{\mu(x)}\left(\int \mu(x)Q(x)dx + C\right)\]</p>
+                
+                <h4 class="mt-4">Ejemplo Resuelto</h4>
+                <p>Resolver \(\frac{dy}{dx} + 2y = e^x\):</p>
+                <ol>
+                    <li>\(\mu(x) = e^{\int 2dx} = e^{2x}\)</li>
+                    <li>Multiplicar: \(e^{2x}\frac{dy}{dx} + 2e^{2x}y = e^{3x}\)</li>
+                    <li>Lado izquierdo: \(\frac{d}{dx}[e^{2x}y] = e^{3x}\)</li>
+                    <li>Integrar: \(e^{2x}y = \frac{1}{3}e^{3x} + C\)</li>
+                    <li>Solución: \(y = \frac{1}{3}e^x + Ce^{-2x}\)</li>
+                </ol>
+            </div>
+            <div class="d-flex justify-content-between mt-4">
+                <a href="/ecuaciones" class="btn btn-secondary">Volver al Menú</a>
+                <a href="/resolver_lineales" class="btn btn-success">Resolver Ecuaciones Lineales</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

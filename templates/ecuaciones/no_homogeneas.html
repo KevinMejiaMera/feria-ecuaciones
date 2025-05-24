@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Ecuaciones No Homogéneas{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center mb-4">Ecuaciones Diferenciales No Homogéneas</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h3>Métodos de Solución</h3>
+        </div>
+        <div class="card-body">
+            <div class="math-equation">
+                <h4>Forma General</h4>
+                <p>\[y'' + p(x)y' + q(x)y = g(x)\]</p>
+                <p>Donde \(g(x) \neq 0\)</p>
+                
+                <h4 class="mt-4">Método de Coeficientes Indeterminados</h4>
+                <p>Para términos no homogéneos especiales:</p>
+                <p>\[g(x) = e^{kx}, \sin(ax), \cos(ax), \text{polinomios o combinaciones}\]</p>
+                
+                <h5>Pasos:</h5>
+                <ol>
+                    <li>Resolver la ecuación homogénea asociada (\(y_h\))</li>
+                    <li>Proponer una solución particular (\(y_p\)) basada en la forma de \(g(x)\)</li>
+                    <li>Determinar coeficientes sustituyendo \(y_p\) en la ecuación original</li>
+                    <li>Solución general: \(y = y_h + y_p\)</li>
+                </ol>
+                
+                <h5 class="mt-3">Ejemplo:</h5>
+                <p>Resolver \(y'' - 3y' + 2y = e^{3x}\):</p>
+                <ol>
+                    <li>Solución homogénea: \(y_h = C_1e^x + C_2e^{2x}\)</li>
+                    <li>Proponer \(y_p = Ae^{3x}\)</li>
+                    <li>Sustituir: \(9Ae^{3x} - 9Ae^{3x} + 2Ae^{3x} = e^{3x}\) ⇒ \(A = \frac{1}{2}\)</li>
+                    <li>Solución: \(y = C_1e^x + C_2e^{2x} + \frac{1}{2}e^{3x}\)</li>
+                </ol>
+                
+                <h4 class="mt-4">Método de Variación de Parámetros</h4>
+                <p>Para cualquier término no homogéneo:</p>
+                <p>\[y_p = -y_1 \int \frac{y_2 g(x)}{W(y_1,y_2)} dx + y_2 \int \frac{y_1 g(x)}{W(y_1,y_2)} dx\]</p>
+                <p>Donde \(W\) es el Wronskiano: \(W(y_1,y_2) = y_1y_2' - y_2y_1'\)</p>
+                
+                <h5>Pasos:</h5>
+                <ol>
+                    <li>Encontrar \(y_1\) y \(y_2\) de la solución homogénea</li>
+                    <li>Calcular el Wronskiano \(W(y_1,y_2)\)</li>
+                    <li>Calcular las integrales para obtener \(y_p\)</li>
+                    <li>Solución general: \(y = y_h + y_p\)</li>
+                </ol>
+                
+                <h5 class="mt-3">Ejemplo:</h5>
+                <p>Resolver \(y'' + y = \tan x\):</p>
+                <ol>
+                    <li>Solución homogénea: \(y_h = C_1\cos x + C_2\sin x\)</li>
+                    <li>Wronskiano: \(W = \cos x \cdot \cos x - \sin x \cdot (-\sin x) = 1\)</li>
+                    <li>Calcular integrales:
+                        <ul>
+                            <li>\(-\cos x \int \sin x \tan x dx = \cos x \ln|\sec x + \tan x| - \cos x \sin x\)</li>
+                            <li>\(\sin x \int \cos x \tan x dx = -\sin x \cos x\)</li>
+                        </ul>
+                    </li>
+                    <li>Solución: \(y = C_1\cos x + C_2\sin x + \cos x \ln|\sec x + \tan x| - 2\sin x \cos x\)</li>
+                </ol>
+            </div>
+            <div class="d-flex justify-content-between mt-4">
+                <a href="/ecuaciones" class="btn btn-secondary">Volver al Menú</a>
+                <a href="/ecuaciones/no-homogeneas/resolver" class="btn btn-primary">Resolver Ecuaciones No Homogéneas</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
