@@ -103,17 +103,23 @@ def api_ecuaciones_homogeneas():
             }), 400
 
         resolvedor = homogeneas.ResolvedorEcuacionesHomogeneas()
-        result = homogeneas.resolver_homogeneas(data)
+        result = resolvedor.resolver_homogeneas(data)
+        
+        # Limpiar cualquier figura de matplotlib que haya quedado en memoria
+        plt.close('all')
         
         return jsonify(result)
 
     except Exception as e:
         print(f"Error en api_ecuaciones_homogeneas: {str(e)}")
         traceback.print_exc()
+        # Asegurarse de cerrar cualquier figura que pueda haber quedado abierta
+        plt.close('all')
         return jsonify({
             'status': 'error',
             'message': f'Error interno del servidor: {str(e)}'
         }), 500
+
 
 @app.route('/ecuaciones/no-homogeneas', methods=['GET'])
 def ecuaciones_no_homogeneas():

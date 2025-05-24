@@ -429,108 +429,30 @@ function processMathContent() {
 }
 
 // Función para renderizar el gráfico con Plotly
-function renderPlotlyGraph(graphData) {
+
+function renderMatplotlibGraph(graphData) {
     const container = document.getElementById('graphContainer');
     
     // Limpiar contenedor primero
     container.innerHTML = '';
     
-    if (!graphData) {
+    if (!graphData || !graphData.image) {
         container.innerHTML = '<div class="alert alert-warning">No se recibieron datos para el gráfico</div>';
         return;
     }
     
-    // Verificar que hay datos para graficar
-    if ((!graphData.general_solutions || graphData.general_solutions.length === 0) && 
-        (!graphData.particular_solution)) {
-        container.innerHTML = '<div class="alert alert-info">No hay soluciones válidas para graficar</div>';
-        return;
-    }
+    // Crear elemento de imagen
+    const img = document.createElement('img');
+    img.src = graphData.image;
+    img.alt = 'Gráfico de la solución';
+    img.style.width = '100%';
+    img.style.height = 'auto';
+    img.style.maxHeight = '500px';
+    img.style.objectFit = 'contain';
     
-    const traces = [];
-    
-    try {
-        // Añadir soluciones generales
-        if (graphData.general_solutions && graphData.general_solutions.length > 0) {
-            graphData.general_solutions.forEach(solution => {
-                if (solution.y_values && solution.y_values.length > 0) {
-                    traces.push({
-                        x: graphData.x_values,
-                        y: solution.y_values,
-                        name: solution.label || 'Solución general',
-                        mode: 'lines',
-                        line: {
-                            width: 1.5,
-                            dash: 'dot'
-                        }
-                    });
-                }
-            });
-        }
-        
-        // Añadir solución particular
-        if (graphData.particular_solution && graphData.particular_solution.y_values && 
-            graphData.particular_solution.y_values.length > 0) {
-            traces.push({
-                x: graphData.x_values,
-                y: graphData.particular_solution.y_values,
-                name: graphData.particular_solution.label || 'Solución particular',
-                mode: 'lines',
-                line: {
-                    color: 'red',
-                    width: 3
-                }
-            });
-        }
-        
-        if (traces.length === 0) {
-            throw new Error("No hay datos válidos para trazar");
-        }
-        
-        const layout = {
-            title: 'Soluciones de la Ecuación Diferencial',
-            xaxis: {
-                title: 'x',
-                showgrid: true,
-                zeroline: true
-            },
-            yaxis: {
-                title: 'y',
-                showgrid: true,
-                zeroline: true
-            },
-            margin: {t: 40, b: 60, l: 60, r: 40},
-            hovermode: 'closest',
-            showlegend: true,
-            legend: {
-                orientation: 'h',
-                y: -0.3,
-                x: 0.5,
-                xanchor: 'center'
-            },
-            plot_bgcolor: '#f8f9fa',
-            paper_bgcolor: '#f8f9fa'
-        };
-        
-        const config = {
-            responsive: true,
-            displayModeBar: true,
-            scrollZoom: true,
-            modeBarButtonsToRemove: ['sendDataToCloud'],
-            displaylogo: false
-        };
-        
-        Plotly.newPlot(container, traces, layout, config);
-        
-    } catch (error) {
-        console.error('Error al renderizar gráfico:', error);
-        container.innerHTML = `
-            <div class="alert alert-danger">
-                Error al mostrar el gráfico: ${error.message}
-            </div>
-        `;
-    }
+    container.appendChild(img);
 }
+
 
 // Manejar el formulario principal
 document.getElementById('equationForm').addEventListener('submit', async function(e) {
@@ -653,7 +575,7 @@ document.getElementById('conditionsForm').addEventListener('submit', async funct
         
         // Renderizar el gráfico
         if (data.graph_data) {
-            renderPlotlyGraph(data.graph_data);
+            renderMatplotlibGraph(data.graph_data);
         } else {
             document.getElementById('graphContainer').innerHTML = 
                 '<div class="alert alert-info">Gráfico no disponible</div>';

@@ -3,11 +3,12 @@ import sympy as sp
 from sympy.parsing.sympy_parser import parse_expr, standard_transformations, implicit_multiplication, convert_xor
 import traceback
 from utils.math_utils import safe_latex
-import matplotlib.pyplot as plt
-from io import BytesIO
-import base64
 from sympy import Eq, lambdify
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
+from io import BytesIO
+import base64
 
 class ResolvedorEcuacionesHomogeneas:
     def __init__(self):
@@ -16,7 +17,7 @@ class ResolvedorEcuacionesHomogeneas:
         self.C1 = sp.Symbol('C1')
         self.C2 = sp.Symbol('C2')
         self.transformations = (standard_transformations + (implicit_multiplication, convert_xor))
-    
+
     def resolver_homogeneas(self, data):
         """Resuelve ecuaciones diferenciales homogéneas con coeficientes constantes"""
         try:
@@ -69,6 +70,7 @@ class ResolvedorEcuacionesHomogeneas:
         steps = []
         particular_solution = None
         additional_steps = []
+        graph_data = None
 
         try:
             dy_dx = next(d for d in expr.atoms(sp.Derivative) 
@@ -104,6 +106,7 @@ class ResolvedorEcuacionesHomogeneas:
                 'method': 'Solución para raíz real simple'
             })
         
+            # Procesar condiciones iniciales
             if condiciones:
                 condiciones_procesadas = self._procesar_condiciones(condiciones)
                 if condiciones_procesadas:
@@ -143,16 +146,19 @@ class ResolvedorEcuacionesHomogeneas:
                                 'equation': particular_solution,
                                 'method': 'Sustitución de constante'
                             })
+                            
+                            # Generar datos para el gráfico - CORREGIDO
+                            print(f"Generando gráfico para solución: {solucion_particular.rhs}")
+                            graph_data = self._generar_datos_matplotlib(solucion_particular.rhs)
+                            print(f"Datos del gráfico generados: {graph_data is not None}")
 
-            plot_html = self._generar_grafico_matplotlib(solucion_general, particular_solution)
-        
             return {
                 'status': 'success',
                 'solution': safe_latex(solucion_general),
                 'particular_solution': particular_solution,
                 'steps': steps,
                 'additional_steps': additional_steps,
-                'plot_html': plot_html,
+                'graph_data': graph_data,
                 'needs_conditions': not bool(condiciones)
             }
 
@@ -224,6 +230,7 @@ class ResolvedorEcuacionesHomogeneas:
             
             particular_solution = None
             additional_steps = []
+            graph_data = None
             
             if condiciones:
                 try:
@@ -267,17 +274,22 @@ class ResolvedorEcuacionesHomogeneas:
                                 {
                                     'step': 4,
                                     'description': 'Solución particular',
-                                    'solution': f"y = {particular_solution}"
+                                    'equation': particular_solution
                                 }
                             ])
+                            
+                            # Generar datos para el gráfico - CORREGIDO
+                            print(f"Generando gráfico para solución de orden 2: {solucion_particular.rhs}")
+                            graph_data = self._generar_datos_matplotlib(solucion_particular.rhs)
+                            print(f"Datos del gráfico generados para orden 2: {graph_data is not None}")
+                            
                 except Exception as e:
+                    print(f"Error procesando condiciones orden 2: {str(e)}")
                     additional_steps.append({
                         'step': len(additional_steps)+1,
                         'description': 'Error aplicando condiciones',
                         'error': str(e)
                     })
-            
-            plot_html = self._generar_grafico_matplotlib(solucion_general, particular_solution)
             
             return {
                 'status': 'success',
@@ -285,7 +297,7 @@ class ResolvedorEcuacionesHomogeneas:
                 'particular_solution': particular_solution,
                 'steps': steps,
                 'additional_steps': additional_steps,
-                'plot_html': plot_html,
+                'graph_data': graph_data,
                 'roots_info': {
                     'roots': [safe_latex(r) for r in raices],
                     'type': tipo_raices
@@ -305,6 +317,80 @@ class ResolvedorEcuacionesHomogeneas:
                 'steps': steps,
                 'traceback': traceback.format_exc()
             }
+
+    def _generar_datos_matplotlib(self, solucion_expr):
+        try:
+            if not solucion_expr:
+                print("Expresión de solución está vacía")
+                return None
+
+            # Convertir la expresión sympy a una función numérica
+            f = lambdify(self.x, solucion_expr, modules=['numpy', 'sympy'])
+        
+            # Determinar un rango de x adecuado dinámicamente
+            x_vals = np.linspace(-5, 5, 500)  # Rango inicial
+        
+            # Evaluar la función con manejo de errores
+            y_vals = []
+            x_valid = []
+        
+            for x_val in x_vals:
+                try:
+                    y_val = complex(f(x_val))
+                    if np.isfinite(y_val) and abs(y_val.imag) < 1e-10:  # Solo parte real
+                        y_vals.append(float(y_val.real))
+                        x_valid.append(float(x_val))
+                    elif np.isfinite(y_val.real):  # Si tiene parte imaginaria significativa
+                        continue  # O podríamos graficar parte real e imaginaria por separado
+                except (TypeError, ValueError, ZeroDivisionError):
+                    continue
+        
+            if len(y_vals) < 10:
+                # Intentar con un rango más pequeño
+                x_vals = np.linspace(-1, 1, 200)
+                y_vals = []
+                x_valid = []
+                for x_val in x_vals:
+                    try:
+                        y_val = complex(f(x_val))
+                        if np.isfinite(y_val) and abs(y_val.imag) < 1e-10:
+                            y_vals.append(float(y_val.real))
+                            x_valid.append(float(x_val))
+                    except:
+                        continue
+        
+            if len(y_vals) >= 10:
+                # Crear la gráfica con Matplotlib
+                plt.figure(figsize=(10, 6))
+                plt.plot(x_valid, y_vals, 'r-', linewidth=2, label='Solución Particular')
+                plt.xlabel('x')
+                plt.ylabel('y')
+                plt.title('Solución de la Ecuación Diferencial')
+                plt.grid(True)
+                plt.legend()
+                
+                # Guardar la gráfica en un buffer
+                buf = BytesIO()
+                plt.savefig(buf, format='png', dpi=100)
+                plt.close()
+                
+                # Codificar la imagen en base64
+                image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+                buf.close()
+                
+                return {
+                    'image': f"data:image/png;base64,{image_base64}",
+                    'x_values': x_valid,
+                    'y_values': y_vals
+                }
+            else:
+                print("No se generaron suficientes puntos válidos")
+                return None
+            
+        except Exception as e:
+            print(f"Error crítico en _generar_datos_matplotlib: {str(e)}")
+            return None
+        
 
     def _procesar_condiciones(self, condiciones_str):
         condiciones = []
@@ -421,61 +507,6 @@ class ResolvedorEcuacionesHomogeneas:
                 return "No homogénea"
         return "Homogénea"
 
-    def _generar_grafico_matplotlib(self, solucion_general, solucion_particular=None):
-        try:
-            plt.figure(figsize=(10, 6))
-            x_vals = np.linspace(-5, 5, 200)
-            
-            if isinstance(solucion_general, str):
-                expr_general = parse_expr(solucion_general.split('=')[1].strip() if '=' in solucion_general else solucion_general, 
-                                       transformations=self.transformations)
-            else:
-                expr_general = solucion_general.rhs if isinstance(solucion_general, sp.Eq) else solucion_general
-            
-            if self.C1 in expr_general.free_symbols:
-                for c1_val in [-2, -1, 1, 2]:
-                    try:
-                        expr = expr_general.subs({self.C1: c1_val})
-                        f = lambdify(self.x, expr, modules=['numpy'])
-                        y_vals = f(x_vals)
-                        plt.plot(x_vals, y_vals, '--', label=f'C₁ = {c1_val}')
-                    except:
-                        continue
-            
-            if solucion_particular:
-                try:
-                    if isinstance(solucion_particular, str):
-                        expr_part = parse_expr(solucion_particular.split('=')[1].strip() if '=' in solucion_particular else solucion_particular,
-                                            transformations=self.transformations)
-                    else:
-                        expr_part = solucion_particular.rhs if isinstance(solucion_particular, sp.Eq) else solucion_particular
-                    
-                    f = lambdify(self.x, expr_part, modules=['numpy'])
-                    y_vals = f(x_vals)
-                    plt.plot(x_vals, y_vals, 'r-', linewidth=2, label='Solución particular')
-                except Exception as e:
-                    print(f"Error procesando solución particular: {str(e)}")
-            
-            plt.title('Soluciones de la Ecuación Diferencial')
-            plt.xlabel('x')
-            plt.ylabel('y')
-            plt.grid(True)
-            plt.legend()
-            
-            buf = BytesIO()
-            plt.savefig(buf, format='png', dpi=100, bbox_inches='tight')
-            plt.close()
-            buf.seek(0)
-            img_base64 = base64.b64encode(buf.read()).decode('utf-8')
-            
-            return f'<img src="data:image/png;base64,{img_base64}" class="img-fluid">'
-            
-        except Exception as e:
-            print(f"Error en _generar_grafico_matplotlib: {str(e)}")
-            traceback.print_exc()
-            return '<div class="alert alert-danger">Error al generar el gráfico</div>'
-
 def resolver_homogeneas(data):
     resolvedor = ResolvedorEcuacionesHomogeneas()
     return resolvedor.resolver_homogeneas(data)
-##hola
