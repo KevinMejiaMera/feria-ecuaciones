@@ -6,8 +6,10 @@ from utils.math_utils import safe_latex
 from sympy import Eq, lambdify
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.integrate import odeint
 from io import BytesIO
 import base64
+
 
 class ResolvedorEcuacionesNoHomogeneas:
     def __init__(self):  # Corregido: __init__ en lugar de _init_
