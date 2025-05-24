@@ -105,6 +105,32 @@
         border-radius: 3px;
         font-size: 0.9em;
     }
+    /* En cada template específico */
+@media (max-width: 767px) {
+    .row {
+        flex-direction: column;
+    }
+    
+    .col-md-6, .col-md-8, .col-md-4 {
+        width: 100%;
+        max-width: 100%;
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+    
+    .card {
+        margin-bottom: 15px;
+    }
+    
+    .form-control, .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    #graphContainer {
+        min-height: 300px; /* Reduce la altura en móviles */
+    }
+}
 </style>
 {% endblock %}
 

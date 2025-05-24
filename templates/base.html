@@ -24,6 +24,7 @@
             margin: 0;
             padding: 0;
             height: 100%;
+            overflow-x: hidden; /* Previene scroll horizontal */
         }
         
         body {
@@ -50,6 +51,8 @@
             position: relative;
             margin: 0;
             width: 100%;
+            padding: 1rem 0;
+            overflow: hidden; /* Evita que el contenido se salga */
         }
         
         .banner-content {
@@ -59,6 +62,8 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+            flex-wrap: wrap; /* Permite que los elementos se ajusten */
+            padding: 0 10px; /* Reduce el padding en móviles */
         }
         
         .logo-left {
@@ -76,11 +81,17 @@
             max-height: 60px;
             width: auto;
         }
+        .logo-left, .logo-right {
+            max-height: 50px; /* Reduce más el tamaño en móviles */
+            margin: 5px 0; /* Añade espacio vertical */
+        }
         
         .banner-text {
             text-align: center;
             flex-grow: 1;
-            padding: 0 20px;
+            order: -1; /* Coloca el texto primero */
+            width: 100%; /* Ocupa todo el ancho */
+            padding: 10px 0; /* Espaciado vertical */
         }
         
         .hero-banner h1 {
@@ -171,7 +182,7 @@
             }
             
             .logo-left, .logo-right {
-                max-height: 50px;
+                max-height: 80px;
             }
             
             .hero-banner h1 {
@@ -180,17 +191,30 @@
             
             .hero-banner p {
                 font-size: 0.9rem;
-                display: none;
+                display: block;
             }
             
             .banner-text {
-                padding: 0 10px;
+                order: 0;
+                width: auto;
+                padding: 0 20px;
             }
             
             .plotly-graph-div {
                 height: 400px;
             }
         }
+            @media (max-width: 576px) {
+            .hero-banner h1 {
+            font-size: 1.3rem; /* Tamaño más pequeño para móviles muy pequeños */
+        }
+    
+        .mobile-menu {
+            width: calc(100% - 40px); /* Ajusta el ancho del menú móvil */
+            right: 20px;
+            left: 20px;
+        }
+}
     </style>
 </head>
 <body>
