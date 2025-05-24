@@ -61,9 +61,9 @@ class ResolvedorEcuacionesHomogeneas:
         """Formatea números para mantener fracciones cuando sea posible"""
         if isinstance(num, (int, float)):
             if isinstance(num, float) and num.is_integer():
-            return int(num)
-        return sp.Rational(num).limit_denominator()
-    return num
+                return int(num)
+            return sp.Rational(num).limit_denominator()
+        return num
     
     def _resolver_orden_1(self, expr, condiciones):
         x, y = self.x, self.y
