@@ -478,3 +478,4 @@ class ResolvedorEcuacionesHomogeneas:
 def resolver_homogeneas(data):
     resolvedor = ResolvedorEcuacionesHomogeneas()
     return resolvedor.resolver_homogeneas(data)
+##hola
