@@ -6,21 +6,6 @@
 {{ super() }}
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<script>
-MathJax = {
-  tex: {
-    inlineMath: [['\\(', '\\)']],
-    displayMath: [['\\[', '\\]']],
-    processEscapes: true,
-    packages: {'[+]': ['ams']}
-  },
-  options: {
-    ignoreHtmlClass: 'tex2jax_ignore',
-    processHtmlClass: 'tex2jax_process'
-  }
-};
-</script>
 <style>
     .solution-display, .equation-display {
         font-size: 1.2rem;
@@ -99,14 +84,11 @@ MathJax = {
         display: inline-block !important;
     }
     
-    .plotly-graph-div {
+    #graphContainer img {
         width: 100%;
-        height: 500px;
-    }
-    
-    .js-plotly-plot .plotly .modebar {
-        left: 50%;
-        transform: translateX(-50%);
+        height: auto;
+        max-height: 500px;
+        object-fit: contain;
     }
     
     .equation-example {
@@ -220,7 +202,7 @@ MathJax = {
                                 </div>
                                 
                                 <div id="graphContainer" class="mt-4" style="width:100%; min-height:500px;">
-                                    <!-- Gráfico interactivo se insertará aquí -->
+                                    <!-- Gráfico se insertará aquí -->
                                 </div>
                             </div>
                         </div>
@@ -296,7 +278,6 @@ MathJax = {
                                 <li><strong>Zoom:</strong> Rueda del mouse</li>
                                 <li><strong>Desplazamiento:</strong> Arrastrar con mouse</li>
                                 <li><strong>Autoscale:</strong> Doble clic</li>
-                                <li><strong>Herramientas:</strong> Barra superior</li>
                             </ul>
                         </div>
                     </div>
@@ -428,276 +409,196 @@ function processMathContent() {
     }
 }
 
-// Función para renderizar el gráfico con Plotly
-function renderPlotlyGraph(graphData) {
+// Función para renderizar el gráfico con Matplotlib (imagen base64)
+function renderMatplotlibGraph(graphData) {
     const container = document.getElementById('graphContainer');
     
     // Limpiar contenedor primero
     container.innerHTML = '';
     
-    if (!graphData) {
+    if (!graphData || !graphData.image) {
         container.innerHTML = '<div class="alert alert-warning">No se recibieron datos para el gráfico</div>';
         return;
     }
     
-    // Verificar que hay datos para graficar
-    if ((!graphData.general_solutions || graphData.general_solutions.length === 0) && 
-        (!graphData.particular_solution)) {
-        container.innerHTML = '<div class="alert alert-info">No hay soluciones válidas para graficar</div>';
+    // Crear elemento de imagen
+    const img = document.createElement('img');
+    img.src = graphData.image;
+    img.alt = 'Gráfico de la solución';
+    img.style.width = '100%';
+    img.style.height = 'auto';
+    img.style.maxHeight = '500px';
+    img.style.objectFit = 'contain';
+    
+    container.appendChild(img);
+}
+
+// Manejar el formulario principal
+document.getElementById('equationForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const equation = document.getElementById('equation').value.trim();
+    
+    if (!equation) {
+        showError('Por favor ingresa una ecuación diferencial');
         return;
     }
     
-    const traces = [];
+    toggleLoader(true);
+    hideAllResults();
+    hideError();
     
     try {
-        // Añadir soluciones generales
-        if (graphData.general_solutions && graphData.general_solutions.length > 0) {
-            graphData.general_solutions.forEach(solution => {
-                if (solution.y_values && solution.y_values.length > 0) {
-                    traces.push({
-                        x: graphData.x_values,
-                        y: solution.y_values,
-                        name: solution.label || 'Solución general',
-                        mode: 'lines',
-                        line: {
-                            width: 1.5,
-                            dash: 'dot'
-                        }
-                    });
-                }
+        const response = await fetch('/ecuaciones/no-homogeneas', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                equation: equation,
+                conditions: ''
+            })
+        });
+        
+        const data = await response.json();
+        console.log("Respuesta del servidor:", data);
+        
+        if (!response.ok) {
+            throw new Error(data.message || data.error || 'Error al resolver la ecuación');
+        }
+        
+        if (!data.solution) {
+            throw new Error("No se pudo obtener la solución de la ecuación");
+        }
+        
+        document.getElementById('generalSolution').innerHTML = ensureMathDelimiters(data.solution);
+        
+        const stepsContainer = document.getElementById('generalSteps');
+        stepsContainer.innerHTML = '';
+        
+        if (data.steps && data.steps.length > 0) {
+            data.steps.forEach(step => {
+                stepsContainer.innerHTML += renderStep(step);
             });
         }
         
-        // Añadir solución particular
-        if (graphData.particular_solution && graphData.particular_solution.y_values && 
-            graphData.particular_solution.y_values.length > 0) {
-            traces.push({
-                x: graphData.x_values,
-                y: graphData.particular_solution.y_values,
-                name: graphData.particular_solution.label || 'Solución particular',
-                        mode: 'lines',
-                        line: {
-                            color: 'red',
-                            width: 3
-                        }
-                    });
-                }
-                
-                if (traces.length === 0) {
-                    throw new Error("No hay datos válidos para trazar");
-                }
-                
-                const layout = {
-                    title: 'Soluciones de la Ecuación Diferencial',
-                    xaxis: {
-                        title: 'x',
-                        showgrid: true,
-                        zeroline: true
-                    },
-                    yaxis: {
-                        title: 'y',
-                        showgrid: true,
-                        zeroline: true
-                    },
-                    margin: {t: 40, b: 60, l: 60, r: 40},
-                    hovermode: 'closest',
-                    showlegend: true,
-                    legend: {
-                        orientation: 'h',
-                        y: -0.3,
-                        x: 0.5,
-                        xanchor: 'center'
-                    },
-                    plot_bgcolor: '#f8f9fa',
-                    paper_bgcolor: '#f8f9fa'
-                };
-                
-                const config = {
-                    responsive: true,
-                    displayModeBar: true,
-                    scrollZoom: true,
-                    modeBarButtonsToRemove: ['sendDataToCloud'],
-                    displaylogo: false
-                };
-                
-                Plotly.newPlot(container, traces, layout, config);
-                
-            } catch (error) {
-                console.error('Error al renderizar gráfico:', error);
-                container.innerHTML = `
-                    <div class="alert alert-danger">
-                        Error al mostrar el gráfico: ${error.message}
-                    </div>
-                `;
-            }
+        document.getElementById('generalResult').style.display = 'block';
+        
+        if (data.needs_conditions) {
+            document.getElementById('addConditionsBtn').style.display = 'block';
         }
+        
+        processMathContent();
+        
+    } catch (error) {
+        showError(error.message);
+        console.error("Error:", error);
+    } finally {
+        toggleLoader(false);
+    }
+});
 
-        // Manejar el formulario principal
-        document.getElementById('equationForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const equation = document.getElementById('equation').value.trim();
-            
-            if (!equation) {
-                showError('Por favor ingresa una ecuación diferencial');
-                return;
-            }
-            
-            toggleLoader(true);
-            hideAllResults();
-            hideError();
-            
-            try {
-                const response = await fetch('/ecuaciones/no-homogeneas', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        equation: equation,
-                        conditions: ''
-                    })
-                });
-                
-                const data = await response.json();
-                console.log("Respuesta del servidor:", data);
-                
-                if (!response.ok) {
-                    throw new Error(data.message || data.error || 'Error al resolver la ecuación');
-                }
-                
-                if (!data.solution) {
-                    throw new Error("No se pudo obtener la solución de la ecuación");
-                }
-                
-                document.getElementById('generalSolution').innerHTML = ensureMathDelimiters(data.solution);
-                
-                const stepsContainer = document.getElementById('generalSteps');
-                stepsContainer.innerHTML = '';
-                
-                if (data.steps && data.steps.length > 0) {
-                    data.steps.forEach(step => {
-                        stepsContainer.innerHTML += renderStep(step);
-                    });
-                }
-                
-                document.getElementById('generalResult').style.display = 'block';
-                
-                if (data.needs_conditions) {
-                    document.getElementById('addConditionsBtn').style.display = 'block';
-                }
-                
-                processMathContent();
-                
-            } catch (error) {
-                showError(error.message);
-                console.error("Error:", error);
-            } finally {
-                toggleLoader(false);
-            }
+// Manejar el formulario de condiciones iniciales
+document.getElementById('conditionsForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    console.log("Formulario de condiciones enviado");
+    
+    const conditions = document.getElementById('conditions').value.trim();
+    const equation = document.getElementById('equation').value.trim();
+    
+    console.log("Condiciones ingresadas:", conditions);
+    
+    if (!conditions) {
+        showError('Por favor ingresa al menos una condición inicial (ej: y(0)=1, y\'(0)=2)');
+        return;
+    }
+    
+    toggleLoader(true);
+    hideError();
+    
+    try {
+        const response = await fetch('/ecuaciones/no-homogeneas', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                equation: equation,
+                conditions: conditions
+            })
         });
+        
+        const data = await response.json();
+        console.log("Respuesta del servidor con condiciones:", data);
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Error al aplicar condiciones iniciales');
+        }
+        
+        // Mostrar resultados
+        document.getElementById('particularSolution').innerHTML = 
+            data.particular_solution ? ensureMathDelimiters(data.particular_solution) : 
+            '<div class="alert alert-warning">No se pudo obtener solución particular</div>';
+        
+        const additionalStepsContainer = document.getElementById('additionalSteps');
+        additionalStepsContainer.innerHTML = '';
+        
+        if (data.additional_steps && data.additional_steps.length > 0) {
+            data.additional_steps.forEach(step => {
+                additionalStepsContainer.innerHTML += renderStep(step);
+            });
+        } else {
+            additionalStepsContainer.innerHTML = 
+                '<div class="alert alert-info">No hay pasos adicionales</div>';
+        }
+        
+        // Renderizar el gráfico
+        if (data.graph_data) {
+            renderMatplotlibGraph(data.graph_data);
+        } else {
+            document.getElementById('graphContainer').innerHTML = 
+                '<div class="alert alert-info">Gráfico no disponible</div>';
+        }
+        
+        document.getElementById('particularResult').style.display = 'block';
+        
+        // Scroll suave a los resultados
+        setTimeout(() => {
+            document.getElementById('particularResult').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }, 100);
+        
+        processMathContent();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showError(error.message || 'Error al procesar condiciones iniciales');
+    } finally {
+        toggleLoader(false);
+    }
+});
 
-        // Manejar el formulario de condiciones iniciales
-        document.getElementById('conditionsForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            console.log("Formulario de condiciones enviado");
-            
-            const conditions = document.getElementById('conditions').value.trim();
-            const equation = document.getElementById('equation').value.trim();
-            
-            console.log("Condiciones ingresadas:", conditions);
-            
-            if (!conditions) {
-                showError('Por favor ingresa al menos una condición inicial (ej: y(0)=1, y\'(0)=2)');
-                return;
-            }
-            
-            toggleLoader(true);
-            hideError();
-            
-            try {
-                const response = await fetch('/ecuaciones/no-homogeneas', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        equation: equation,
-                        conditions: conditions
-                    })
-                });
-                
-                const data = await response.json();
-                console.log("Respuesta del servidor con condiciones:", data);
-                
-                if (!response.ok) {
-                    throw new Error(data.message || 'Error al aplicar condiciones iniciales');
-                }
-                
-                // Mostrar resultados
-                document.getElementById('particularSolution').innerHTML = 
-                    data.particular_solution ? ensureMathDelimiters(data.particular_solution) : 
-                    '<div class="alert alert-warning">No se pudo obtener solución particular</div>';
-                
-                const additionalStepsContainer = document.getElementById('additionalSteps');
-                additionalStepsContainer.innerHTML = '';
-                
-                if (data.additional_steps && data.additional_steps.length > 0) {
-                    data.additional_steps.forEach(step => {
-                        additionalStepsContainer.innerHTML += renderStep(step);
-                    });
-                } else {
-                    additionalStepsContainer.innerHTML = 
-                        '<div class="alert alert-info">No hay pasos adicionales</div>';
-                }
-                
-                // Renderizar el gráfico
-                if (data.graph_data) {
-                    renderPlotlyGraph(data.graph_data);
-                } else {
-                    document.getElementById('graphContainer').innerHTML = 
-                        '<div class="alert alert-info">Gráfico no disponible</div>';
-                }
-                
-                document.getElementById('particularResult').style.display = 'block';
-                
-                // Scroll suave a los resultados
-                setTimeout(() => {
-                    document.getElementById('particularResult').scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }, 100);
-                
-                processMathContent();
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showError(error.message || 'Error al procesar condiciones iniciales');
-            } finally {
-                toggleLoader(false);
-            }
-        });
-
-        // Manejar el botón para agregar condiciones
-        document.getElementById('addConditionsBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            const form = document.getElementById('conditionsForm');
-            
-            // Alternar visibilidad con animación
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
-            
-            // Si el formulario se muestra, ocultar el botón
-            if (form.style.display === 'block') {
-                this.style.display = 'none';
-                // Enfocar el campo de condiciones
-                document.getElementById('conditions').focus();
-            }
-            
-            // Reprocesar MathJax
-            if (typeof MathJax !== 'undefined') {
-                MathJax.typesetPromise();
-            }
-        });
-    </script>
-    {% endblock %}
+// Manejar el botón para agregar condiciones
+document.getElementById('addConditionsBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    const form = document.getElementById('conditionsForm');
+    
+    // Alternar visibilidad con animación
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    
+    // Si el formulario se muestra, ocultar el botón
+    if (form.style.display === 'block') {
+        this.style.display = 'none';
+        // Enfocar el campo de condiciones
+        document.getElementById('conditions').focus();
+    }
+    
+    // Reprocesar MathJax
+    if (typeof MathJax !== 'undefined') {
+        MathJax.typesetPromise();
+    }
+});
+</script>
+{% endblock %}
