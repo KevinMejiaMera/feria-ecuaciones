@@ -9,7 +9,7 @@ import traceback
 from io import BytesIO
 import base64
 import matplotlib.pyplot as plt
-
+import os
 # Configuración inicial
 sys.path.append(str(Path(__file__).parent))
 app = Flask(__name__)
@@ -213,4 +213,4 @@ def preprocess_equation(eq_str):
     return eq_str.replace('exp(x)', 'exp(x)').replace('exp**x', 'exp(x)')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
