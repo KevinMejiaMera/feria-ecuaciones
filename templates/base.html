@@ -181,6 +181,17 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+        /* Estilo para derivadas con apóstrofo unicode */
+        .derivada {
+        position: relative;
+        font-family: "Times New Roman", serif;
+        }
+
+        .derivada::after {
+        content: "′";  /* Carácter PRIME (U+2032) */
+        position: relative;
+        font-size: inherit;
+        }
 
         /* Versión desktop */
         @media (min-width: 768px) {
@@ -216,7 +227,19 @@
             .logo-right-container {
                 gap: 15px;
             }
+            /* Estilo para derivadas con apóstrofo unicode */
+        .derivada {
+        position: relative;
+        font-family: "Times New Roman", serif;
         }
+
+        .derivada::after {
+         content: "′";  /* Carácter PRIME (U+2032) */
+        position: relative;
+        font-size: inherit;
+            }
+        }
+        
 
         /* Ajustes para móviles muy pequeños */
         @media (max-width: 400px) {
@@ -251,6 +274,17 @@
             background: #343a40;
             color: white;
             margin-top: 2rem;
+        }
+        /* Estilo para derivadas con apóstrofo unicode */
+        .derivada {
+        position: relative;
+        font-family: "Times New Roman", serif;
+        }
+
+        .derivada::after {
+        content: "′";  /* Carácter PRIME (U+2032) */
+        position: relative;
+        font-size: inherit;
         }
     </style>
 </head>
@@ -302,7 +336,6 @@
 
     <footer>
         <div class="container">
-            <p class="mb-0">© 2023 Proyecto de Matemáticas Avanzadas</p>
         </div>
     </footer>
 
@@ -348,7 +381,64 @@
             }
         });
     </script>
-    
+    <!-- Agregar este bloque de script justo antes del cierre de </body> en base.html -->
+
+<!-- Script para el menú móvil y compatibilidad con iPhone -->
+<script>
+    // Función global para normalizar diferentes tipos de apóstrofes
+    function normalizeApostrophes(text) {
+        // Lista de caracteres que representan apóstrofes/comillas simples
+        const apostrophes = [
+            '\u2019', // ' RIGHT SINGLE QUOTATION MARK (iOS default)
+            '\u2018', // ' LEFT SINGLE QUOTATION MARK
+            '\u0027', // ' APOSTROPHE (standard)
+            '\u02BC', // ʼ MODIFIER LETTER APOSTROPHE
+            '\u02B9', // ʹ MODIFIER LETTER PRIME
+            '\u00B4', // ´ ACUTE ACCENT
+            '\u0060', // ` GRAVE ACCENT
+            '\u2032', // ′ PRIME
+            '\u2033', // ″ DOUBLE PRIME
+            '\u201B', // ‛ SINGLE HIGH-REVERSED-9 QUOTATION MARK
+            '\uFF07'  // ＇ FULLWIDTH APOSTROPHE
+        ];
+        
+        // Reemplazar todos los tipos de apóstrofes con el estándar
+        let normalized = text;
+        apostrophes.forEach(char => {
+            const regex = new RegExp(char, 'g');
+            normalized = normalized.replace(regex, "'");
+        });
+        
+        return normalized;
+    }
+    // Verificar carga de Plotly
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof Plotly === 'undefined') {
+            console.error('Plotly no se cargó correctamente');
+            
+            // Cargar Plotly dinámicamente como fallback
+            const script = document.createElement('script');
+            script.src = 'https://cdn.plot.ly/plotly-latest.min.js';
+            script.onload = function() {
+                console.log('Plotly cargado dinámicamente con éxito');
+                document.dispatchEvent(new Event('plotlyLoaded'));
+            };
+            script.onerror = function() {
+                console.error('Error al cargar Plotly dinámicamente');
+            };
+            document.head.appendChild(script);
+        } else {
+            console.log('Plotly cargado correctamente');
+            document.dispatchEvent(new Event('plotlyLoaded'));
+        }
+        
+        // Log para debug en iOS
+        if (isIOS()) {
+            console.log('Dispositivo iOS detectado - Normalización de apóstrofes activada');
+        }
+    });
+</script>
+  
     {% block scripts %}{% endblock %}
 </body>
 </html>

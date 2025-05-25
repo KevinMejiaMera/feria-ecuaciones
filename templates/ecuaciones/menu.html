@@ -3,88 +3,124 @@
 {% block title %}Ecuaciones Diferenciales{% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <!-- Nueva sección de clasificación -->
-    <div class="row mb-4">
+<div class="container my-4">
+    <!-- Sección de clasificación -->
+    <div class="row mb-3">
         <div class="col-12">
             <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <h3>Clasificación de Ecuaciones Diferenciales</h3>
+                <div class="card-header bg-dark text-white py-2">
+                    <h3 class="mb-0">Clasificación de Ecuaciones Diferenciales</h3>
                 </div>
-                <div class="card-body">
+                <div class="card-body py-2">
                     <div class="row">
                         <div class="col-md-6">
-                            <h4>Por tipo:</h4>
-                            <ul class="list-group mb-3">
-                                <li class="list-group-item">Ordinarias (EDO)</li>
+                            <h4 class="h5">Por tipo:</h4>
+                            <ul class="list-group list-group-flush mb-2">
+                                <li class="list-group-item py-1">Ordinarias (EDO)</li>
                             </ul>
                             
-                            <h4>Por orden:</h4>
-                            <ul class="list-group mb-3">
-                                <li class="list-group-item">Primer orden</li>
-                                <li class="list-group-item">Segundo orden</li>
-                                <li class="list-group-item">Orden superior</li>
+                            <h4 class="h5">Por orden:</h4>
+                            <ul class="list-group list-group-flush mb-2">
+                                <li class="list-group-item py-1">Primer orden</li>
+                                <li class="list-group-item py-1">Segundo orden</li>
+                                <li class="list-group-item py-1">Orden superior</li>
                             </ul>
                         </div>
                         
                         <div class="col-md-6">
-                            <h4>Por linealidad:</h4>
-                            <ul class="list-group mb-3">
-                                <li class="list-group-item">Lineales</li>
-                                <li class="list-group-item">No lineales</li>
+                            <h4 class="h5">Por linealidad:</h4>
+                            <ul class="list-group list-group-flush mb-2">
+                                <li class="list-group-item py-1">Lineales</li>
+                                <li class="list-group-item py-1">No lineales</li>
                             </ul>
                             
-                            <h4>Otras clasificaciones:</h4>
-                            <ul class="list-group">
-                                <li class="list-group-item">Homogéneas</li>
-                                <li class="list-group-item">No homogéneas</li>
-                                
+                            <h4 class="h5">Otras clasificaciones:</h4>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item py-1">Homogéneas</li>
+                                <li class="list-group-item py-1">No homogéneas</li>
                             </ul>
                         </div>
                     </div>
-                    <div class="text-center mt-3">
-                    <a href="{{ url_for('clasificar_ecuacion') }}" class="btn btn-dark">Clasifica una Ecuación</a>
+                    <div class="text-center mt-2">
+                        <a href="{{ url_for('clasificar_ecuacion') }}" class="btn btn-dark btn-sm">Clasifica una Ecuación</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Contenedores originales -->
+    <!-- Contenedores principales -->
     <div class="row">
-          <!-- Homogéneas -->
-        <div class="col-md-6 mb-4">
+        <!-- Homogéneas -->
+        <div class="col-md-6 mb-3">
             <div class="card h-100">
-                <div class="card-header bg-warning text-dark">
-                    <h3>Homogéneas</h3>
+                <div class="card-header bg-warning text-dark py-2">
+                    <h3 class="mb-0">Homogéneas</h3>
                 </div>
-                <div class="card-body">
-                    <div class="math-equation">
-                        <p>Forma general:</p>
-                        <p>\[\frac{dy}{dx} = f\left(\frac{y}{x}\right)\]</p>
-                        <p>Solución por sustitución:</p>
-                        <p>\[v = \frac{y}{x}, \quad y = vx, \quad \frac{dy}{dx} = v + x\frac{dv}{dx}\]</p>
+                <div class="card-body py-2" style="overflow-y: auto; max-height: 400px;">
+                    <div class="math-equation compact">
+                        <p class="mb-1"><strong>Forma general</strong></p>
+                        <p class="mb-2">\[ay'' + by' + cy = 0\]</p>
+                        <p class="mb-1"><strong>Método:</strong></p>
+                        <ol class="pl-3 mb-2">
+                            <li class="small">Ecuación característica: \(ar^2 + br + c = 0\)</li>
+                            <li class="small">Hallar raíces \(r_1\) y \(r_2\)</li>
+                        </ol>
+                        
+                        <p class="mb-1"><strong>Soluciones:</strong></p>
+                        <ol class="pl-3">
+                            <li class="small"><strong>Raíces reales distintas</strong> (\(r_1 \neq r_2\)):
+                                <div>\[y(x) = C_1e^{r_1x} + C_2e^{r_2x}\]</div>
+                            </li>
+                            <li class="small"><strong>Raíces iguales</strong> (\(r_1 = r_2\)):
+                                <div>\[y(x) = (C_1 + C_2x)e^{r_1x}\]</div>
+                            </li>
+                            <li class="small"><strong>Raíces Imaginarias</strong> (\(r = \alpha \pm \beta i\)):
+                                <div>\[y(x) = e^{\alpha x}(C_1\cos(\beta x) + C_2\sin(\beta x))\]</div>
+                            </li>
+                        </ol>
                     </div>
-                    <a href="/ecuaciones/homogeneas" class="btn btn-warning mt-3">Ver Metodo</a>
+                    <div class="text-center mt-2">
+                        <a href="/ecuaciones/homogeneas" class="btn btn-warning btn-sm">Ver Método</a>
+                    </div>
                 </div>
             </div>
         </div>
         
         <!-- No homogéneas -->
-        <div class="col-md-6 mb-4">
+        <div class="col-md-6 mb-3">
             <div class="card h-100">
-                <div class="card-header bg-secondary text-white">
-                    <h3>No Homogéneas</h3>
+                <div class="card-header bg-secondary text-white py-2">
+                    <h3 class="mb-0">No Homogéneas</h3>
                 </div>
-                <div class="card-body">
-                    <div class="math-equation">
-                        <p>Forma general (lineales):</p>
-                        <p>\[\frac{dy}{dx} + P(x)y = Q(x)\]</p>
-                        <p>Solución general:</p>
-                        <p>\[y = y_h + y_p\]</p>
-                        <p>Donde \(y_h\) es solución homogénea y \(y_p\) es solución particular</p>
+                <div class="card-body py-2" style="overflow-y: auto; max-height: 400px;">
+                    <div class="math-equation compact">
+                        <p class="mb-1"><strong>Forma general</strong></p>
+                        <p class="mb-2">\[ay'' + by' + cy = g(x)\]</p>
+                        
+                        <p class="mb-1"><strong>Método:</strong></p>
+                        <ol class="pl-3 mb-2">
+                            <li class="small">Resolver la homogénea asociada</li>
+                            <li class="small">Encontrar solución particular \(y_p\)</li>
+                            <li class="small">Solución general: \(y(x) = y_h + y_p\)</li>
+                        </ol>
+                        
+                        <p class="mb-1"><strong>Métodos para \(y_p\):</strong></p>
+                        <ul class="pl-3 mb-2">
+                            <li class="small"><strong>Coeficientes indeterminados</strong></li>
+                            <li class="small"><strong>Variación de parámetros</strong></li>
+                        </ul>
+                        
+                        <p class="mb-1"><strong>Soluciones:</strong></p>
+                        <ol class="pl-3">
+                            <li class="small">Solución homogénea \(y_h\)</li>
+                            <li class="small">Solución particular \(y_p\)</li>
+                            <li class="small">Suma \(y_h + y_p\)</li>
+                        </ol>
                     </div>
-                    <a href="/ecuaciones/no-homogeneas" class="btn btn-secondary mt-3">Ver Metodo</a>
+                    <div class="text-center mt-2">
+                        <a href="/ecuaciones/no-homogeneas" class="btn btn-secondary btn-sm">Ver Método</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -92,37 +128,37 @@
 </div>
 
 <style>
-    .math-equation {
-        font-size: 1.05em;
-        margin-bottom: 1rem;
+    .math-equation.compact {
+        font-size: 0.95em;
+        line-height: 0.7;
     }
-    .math-equation p {
+    .math-equation.compact p {
+        margin-bottom: 0.3rem;
+    }
+    .math-equation.compact ol, 
+    .math-equation.compact ul {
+        padding-left: 1rem;
         margin-bottom: 0.5rem;
     }
+    .math-equation.compact li {
+        margin-bottom: 0.3rem;
+    }
     .card {
-        transition: transform 0.3s;
         border: none;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-    }
-    .btn {
-        font-weight: 500;
-        padding: 8px 20px;
-        border-radius: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     .card-header {
-        border-bottom: none;
-        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
     }
-    .card-body {
-        padding: 1.5rem;
+    .btn-sm {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    .small {
+        font-size: 0.85em;
     }
     .list-group-item {
-        font-size: 1.05em;
-        padding: 0.75rem 1.25rem;
+        padding: 0.5rem 1rem;
     }
 </style>
 {% endblock %}

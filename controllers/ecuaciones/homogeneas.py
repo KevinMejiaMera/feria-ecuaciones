@@ -207,16 +207,16 @@ class ResolvedorEcuacionesHomogeneas:
             if len(raices) == 2:
                 if raices[0] == raices[1]:
                     solucion_general = Eq(y, (self.C1 + self.C2 * x) * sp.exp(raices[0] * x))
-                    tipo_raices = "Raíz real doble"
+                    tipo_raices = "Raíces iguales"
                 elif all(r.is_real for r in raices):
                     solucion_general = Eq(y, self.C1 * sp.exp(raices[0] * x) + self.C2 * sp.exp(raices[1] * x))
-                    tipo_raices = "Dos raíces reales distintas"
+                    tipo_raices = "Raíces reales distintas"
                 else:
                     alpha = sp.re(raices[0])
                     beta = sp.im(raices[0])
                     solucion_general = Eq(y, sp.exp(alpha * x) * 
                                       (self.C1 * sp.cos(beta * x) + self.C2 * sp.sin(beta * x)))
-                    tipo_raices = "Raíces complejas conjugadas"
+                    tipo_raices = "Raíz Imaginaria"
             else:
                 raise ValueError("La ecuación característica no produjo 2 raíces")
             
