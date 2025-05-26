@@ -51,13 +51,13 @@
             </div>
         </div>
         
-        <!-- Panel de Reglas de Integración -->
+        <!-- Panel de Reglas de Integración CON SCROLL ARREGLADO -->
         <div class="col-md-6">
-            <div class="card mb-4" style="max-height: 400px;">
+            <div class="card mb-4" style="max-height: 400px; overflow: hidden;">
                 <div class="card-header bg-success text-white">
                     <h3 class="mb-0">Reglas Básicas de Integración</h3>
                 </div>
-                
+                <div class="card-body" style="overflow-y: auto; height: calc(400px - 56px);">
                     <div class="math-equation">
                         <p><strong>Potencia:</strong> \[\int x^n \, dx = \frac{x^{n+1}}{n+1} + C \quad (n \neq -1)\]</p>
                         <p><strong>Exponencial:</strong> \[\int e^x \, dx = e^x + C\]</p>
@@ -68,19 +68,20 @@
                         <p><strong>Sustitución:</strong> \[\int f(g(x))g'(x) \, dx = F(g(x)) + C\]</p>
                         <p><strong>Por Partes:</strong> \[\int u \, dv = uv - \int v \, du\]</p>
                     </div>
-                
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    /* Estilos para el scroll personalizado */
+    /* Estilos específicos para la página de integrales */
     .card-body::-webkit-scrollbar {
         width: 8px;
     }
     .card-body::-webkit-scrollbar-track {
         background: #f8f9fa;
+        border-radius: 0 0 4px 4px;
     }
     .card-body::-webkit-scrollbar-thumb {
         background-color: #6c757d;
@@ -95,41 +96,28 @@
         text-align: justify;
         padding-left: 10px;
     }
-    /* Estructura para footer fijo */
-    body {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
+
+    @media (max-width: 767px) {
+        .row {
+            flex-direction: column;
+        }
+        
+        .col-md-6 {
+            width: 100%;
+            max-width: 100%;
+            padding-right: 10px;
+            padding-left: 10px;
+        }
+        
+        .card {
+            margin-bottom: 15px;
+        }
+        
+        .form-control, .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
     }
-    .container {
-        flex: 1;
-    }
-    /* En cada template específico */
-@media (max-width: 767px) {
-    .row {
-        flex-direction: column;
-    }
-    
-    .col-md-6, .col-md-8, .col-md-4 {
-        width: 100%;
-        max-width: 100%;
-        padding-right: 10px;
-        padding-left: 10px;
-    }
-    
-    .card {
-        margin-bottom: 15px;
-    }
-    
-    .form-control, .btn {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-    
-    #graphContainer {
-        min-height: 300px; /* Reduce la altura en móviles */
-    }
-}
 </style>
 
 <script>

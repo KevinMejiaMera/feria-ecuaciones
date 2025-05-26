@@ -51,13 +51,13 @@
             </div>
         </div>
         
-        <!-- Panel de Reglas de Derivación -->
+        <!-- Panel de Reglas de Derivación CON SCROLL ARREGLADO -->
         <div class="col-md-6">
-            <div class="card mb-4" style="max-height: 400px;"> <!-- Altura máxima fija -->
+            <div class="card mb-4" style="max-height: 400px; overflow: hidden;">
                 <div class="card-header bg-success text-white">
                     <h3 class="mb-0">Reglas Básicas de Derivación</h3>
                 </div>
-               
+                <div class="card-body" style="overflow-y: auto; height: calc(400px - 56px);">
                     <div class="math-equation">
                         <p><strong>Constante:</strong> \[\frac{d}{dx}[c] = 0\]</p>
                         <p><strong>Potencia:</strong> \[\frac{d}{dx}[x^n] = nx^{n-1}\]</p>
@@ -68,23 +68,25 @@
                         <p><strong>Cociente:</strong> \[\frac{d}{dx}\left[\frac{f(x)}{g(x)}\right] = \frac{f'(x)g(x) - f(x)g'(x)}{g(x)^2}\]</p>
                         <p><strong>Cadena:</strong> \[\frac{d}{dx}f(g(x)) = f'(g(x)) \cdot g'(x)\]</p>
                     </div>
-                
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    /* Estilos para el scroll personalizado */
+    /* Estilos específicos para la página de derivadas */
     .card-body::-webkit-scrollbar {
         width: 8px;
     }
     .card-body::-webkit-scrollbar-track {
         background: #f8f9fa;
+        border-radius: 0 0 4px 4px;
     }
     .card-body::-webkit-scrollbar-thumb {
         background-color: #6c757d;
         border-radius: 4px;
+        border: 2px solid #f8f9fa;
     }
     .math-equation p {
         margin-bottom: 0.8rem;
@@ -92,43 +94,30 @@
     .math-equation {
         font-size: 1.05em;
         text-align: justify;
-    padding-left: 10px;
-    }
-    /* Evitar que el footer se mueva */
-    body {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-    .container {
-        flex: 1;
-    }
-    /* En cada template específico */
-@media (max-width: 767px) {
-    .row {
-        flex-direction: column;
-    }
-    
-    .col-md-6, .col-md-8, .col-md-4 {
-        width: 100%;
-        max-width: 100%;
-        padding-right: 10px;
         padding-left: 10px;
     }
-    
-    .card {
-        margin-bottom: 15px;
+
+    @media (max-width: 767px) {
+        .row {
+            flex-direction: column;
+        }
+        
+        .col-md-6 {
+            width: 100%;
+            max-width: 100%;
+            padding-right: 10px;
+            padding-left: 10px;
+        }
+        
+        .card {
+            margin-bottom: 15px;
+        }
+        
+        .form-control, .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
     }
-    
-    .form-control, .btn {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-    
-    #graphContainer {
-        min-height: 300px; /* Reduce la altura en móviles */
-    }
-}
 </style>
 
 <script>
